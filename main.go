@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"os"
 
 	"gitlab.com/SuperMatt/ComicDB/server"
 )
@@ -12,7 +13,8 @@ func main() {
 	appFlags.String("AWS_SECRET_ACCESS_KEY", "", "AWS_SECRET_ACCESS_KEY")
 	appFlags.String("aws-bucket", "", "AWS bucket name")
 	appFlags.String("aws-path", "", "Path to data file")
-	appFlags.Parse()
+	appFlags.String("listen", ":8080", "Listen Address")
+	appFlags.Parse(os.Args[1:])
 
 	server.StartServer(appFlags)
 }

@@ -3,6 +3,7 @@ package server
 import (
 	"flag"
 	"fmt"
+	"net"
 	"net/http"
 )
 
@@ -18,8 +19,8 @@ func NewSettings(args *flag.FlagSet) (s Settings, err error) {
 	if err != nil {
 		return s, err
 	}
-	s.HTTP = NewHTTPSettings(args)
-	return s, nil
+	s.HTTP, err = NewHTTPSettings(args)
+	return s, err
 }
 
 //AwsSettings ...
@@ -64,15 +65,29 @@ func NewAwsSettings(args *flag.FlagSet) (a AwsSettings, err error) {
 //HTTPSettings ...
 type HTTPSettings struct {
 	BindIP      string
-	BindPort    int
+	BindPort    string
 	BindAddress string
 }
 
 //NewHTTPSettings ...
-func NewHTTPSettings(args *flag.FlagSet) (h HTTPSettings) {
-	return h
+func NewHTTPSettings(args *flag.FlagSet) (h HTTPSettings, err error) {
+	l, err := getFlagValue(args, "listen")
+	if err != nil {
+		return h, err
+	}
+
+	iface, port, err := net.SplitHostPort(l)
+	if err != nil {
+		return h, err
+	}
+
+	h.BindIP = iface
+	h.BindPort = port
+	h.BindAddress = l
+
+	return h, nil
 }
 
-func httpGetSettings(w http.ResponseWriter, r *http.Request) {
-
+func httpGetSettings(w http.ResponseWriter, s *Settings) {
+	SendJSONData(w, s)
 }
