@@ -2,12 +2,10 @@ package comicdb
 
 import (
 	"testing"
-	"time"
 )
 
 func TestComicDB(t *testing.T) {
-	var db ComicDB
-	db.Date = time.Now()
+	db := NewDB()
 	title := NewComicTitle("The Batman Who Laughs", 1, 2018)
 	issue := NewComicIssue(1, "", 1)
 

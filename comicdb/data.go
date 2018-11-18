@@ -27,6 +27,13 @@ type ComicIssue struct {
 	Box         int
 }
 
+//NewDB ...
+func NewDB() *ComicDB {
+	var db ComicDB
+	db.Date = time.Now()
+	return &db
+}
+
 //LoadComicDBBytes ...
 func LoadComicDBBytes(b []byte) (db *ComicDB, err error) {
 	err = json.Unmarshal(b, db)
