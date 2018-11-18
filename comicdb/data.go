@@ -42,6 +42,16 @@ func LoadComicDBFile(f string) (db *ComicDB, err error) {
 	return LoadComicDBBytes(b)
 }
 
+//String ...
+func (db *ComicDB) String() string {
+	b, err := json.Marshal(db)
+	if err != nil {
+		return err.Error()
+	}
+
+	return string(b)
+}
+
 //AddComicTitle ...
 func (db *ComicDB) AddComicTitle(t *ComicTitle) {
 	db.Titles = append(db.Titles, t)
@@ -53,18 +63,20 @@ func (t *ComicTitle) AddComicIssue(i *ComicIssue) {
 }
 
 //NewComicTitle ...
-func NewComicTitle(t string, v int, y int) (ct *ComicTitle) {
+func NewComicTitle(t string, v int, y int) *ComicTitle {
+	var ct ComicTitle
 	ct.Title = t
 	ct.Volume = v
 	ct.Year = y
-	return ct
+	return &ct
 
 }
 
 //NewComicIssue ...
-func NewComicIssue(i int, vt string, b int) (ci *ComicIssue) {
+func NewComicIssue(i int, vt string, b int) *ComicIssue {
+	var ci ComicIssue
 	ci.IssueNumber = i
 	ci.VanityTitle = vt
 	ci.Box = b
-	return ci
+	return &ci
 }
