@@ -2,9 +2,9 @@ package server
 
 import (
 	"flag"
-	"fmt"
 	"net"
 	"net/http"
+	"os"
 )
 
 //Settings ...
@@ -15,51 +15,49 @@ type Settings struct {
 
 //NewSettings ...
 func NewSettings(args *flag.FlagSet) (s Settings, err error) {
-	s.AWS, err = NewAwsSettings(args)
-	if err != nil {
-		return s, err
-	}
+	s.AWS = NewAwsSettings(args)
 	s.HTTP, err = NewHTTPSettings(args)
 	return s, err
 }
 
 //AwsSettings ...
 type AwsSettings struct {
+	Endpoint        string
+	Profile         string
 	AccessKeyID     string
 	SecretAccessKey string
 	Bucket          string
 	Path            string
+	Region          string
 }
 
-func getFlagValue(a *flag.FlagSet, f string) (v string, err error) {
+func getFlagValue(a *flag.FlagSet, f string) (v string) {
 	v = a.Lookup(f).Value.String()
-	if v == "" {
-		return v, fmt.Errorf("Blank value found for variable %s", f)
-	}
+	return v
+}
 
-	return v, nil
+func setEnvIfNotSet(k, v string) {
+	if os.Getenv(k) == "" {
+		os.Setenv(k, v)
+	}
 }
 
 //NewAwsSettings ...
-func NewAwsSettings(args *flag.FlagSet) (a AwsSettings, err error) {
-	a.AccessKeyID, err = getFlagValue(args, "AWS_ACCESS_KEY_ID")
-	if err != nil {
-		return a, err
-	}
-	a.SecretAccessKey, err = getFlagValue(args, "AWS_SECRET_ACCESS_KEY")
-	if err != nil {
-		return a, err
-	}
-	a.Bucket, err = getFlagValue(args, "aws-bucket")
-	if err != nil {
-		return a, err
-	}
-	a.Path, err = getFlagValue(args, "aws-path")
-	if err != nil {
-		return a, err
-	}
+func NewAwsSettings(args *flag.FlagSet) (a AwsSettings) {
+	a.AccessKeyID = getFlagValue(args, "AWS_ACCESS_KEY_ID")
+	os.Setenv("AWS_ACCESS_KEY_ID", a.AccessKeyID)
+	a.SecretAccessKey = getFlagValue(args, "AWS_SECRET_ACCESS_KEY")
+	os.Setenv("AWS_SECRET_ACCESS_KEY", a.SecretAccessKey)
+	a.Profile = getFlagValue(args, "aws-profile")
+	os.Setenv("AWS_PROFILE", a.Profile)
+	a.Region = getFlagValue(args, "aws-region")
+	setEnvIfNotSet("AWS_REGION", a.Region)
 
-	return a, nil
+	a.Bucket = getFlagValue(args, "aws-bucket")
+	a.Path = getFlagValue(args, "aws-path")
+	a.Endpoint = getFlagValue(args, "aws-endpoint")
+
+	return a
 }
 
 //HTTPSettings ...
@@ -71,10 +69,7 @@ type HTTPSettings struct {
 
 //NewHTTPSettings ...
 func NewHTTPSettings(args *flag.FlagSet) (h HTTPSettings, err error) {
-	l, err := getFlagValue(args, "listen")
-	if err != nil {
-		return h, err
-	}
+	l := getFlagValue(args, "listen")
 
 	iface, port, err := net.SplitHostPort(l)
 	if err != nil {
