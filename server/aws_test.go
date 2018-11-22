@@ -9,7 +9,7 @@ import (
 )
 
 func TestS3Session(t *testing.T) {
-	var s Settings
+	var s Server
 
 	s.AWS.Profile = "digitalocean"
 	s.AWS.Endpoint = "https://ams3.digitaloceanspaces.com/"
@@ -19,7 +19,8 @@ func TestS3Session(t *testing.T) {
 
 	s.AWS.SetAWSEnvironmentVariables()
 
-	sess := NewS3(s)
+	s.NewS3()
+	sess := s.AWS.Session
 
 	var l s3.GetObjectInput
 	l.Bucket = &s.AWS.Bucket

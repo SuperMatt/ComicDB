@@ -5,16 +5,18 @@ import (
 	"net"
 	"net/http"
 	"os"
+
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-//Settings ...
-type Settings struct {
+//Server ...
+type Server struct {
 	AWS  AwsSettings
 	HTTP HTTPSettings
 }
 
-//NewSettings ...
-func NewSettings(args *flag.FlagSet) (s Settings, err error) {
+//NewServer ...
+func NewServer(args *flag.FlagSet) (s Server, err error) {
 	s.AWS = NewAwsSettings(args)
 	s.HTTP, err = NewHTTPSettings(args)
 	return s, err
@@ -29,11 +31,16 @@ type AwsSettings struct {
 	Bucket          string
 	Path            string
 	Region          string
+	Session         *s3.S3
 }
 
-func getFlagValue(a *flag.FlagSet, f string) (v string) {
-	v = a.Lookup(f).Value.String()
-	return v
+func getFlagValue(a *flag.FlagSet, f string) string {
+	v := a.Lookup(f)
+	if v == nil {
+		return ""
+	}
+
+	return v.Value.String()
 }
 
 func setEnvIfNotSet(k, v string) {
@@ -47,10 +54,17 @@ func NewAwsSettings(args *flag.FlagSet) (a AwsSettings) {
 	a.AccessKeyID = getFlagValue(args, "AWS_ACCESS_KEY_ID")
 	a.SecretAccessKey = getFlagValue(args, "AWS_SECRET_ACCESS_KEY")
 	a.Profile = getFlagValue(args, "aws-profile")
-	a.Region = getFlagValue(args, "aws-region")
+	r := getFlagValue(args, "aws-region")
+	a.Region = r
+	if r == "" {
+		a.Region = "us-west-1"
+	}
 	a.Bucket = getFlagValue(args, "aws-bucket")
 	a.Path = getFlagValue(args, "aws-path")
 	a.Endpoint = getFlagValue(args, "aws-endpoint")
+
+	a.SetAWSEnvironmentVariables()
+
 	return a
 }
 
@@ -85,6 +99,6 @@ func NewHTTPSettings(args *flag.FlagSet) (h HTTPSettings, err error) {
 	return h, nil
 }
 
-func httpGetSettings(w http.ResponseWriter, s *Settings) {
+func httpGetSettings(w http.ResponseWriter, s *Server) {
 	SendJSONData(w, s)
 }
