@@ -45,19 +45,21 @@ func setEnvIfNotSet(k, v string) {
 //NewAwsSettings ...
 func NewAwsSettings(args *flag.FlagSet) (a AwsSettings) {
 	a.AccessKeyID = getFlagValue(args, "AWS_ACCESS_KEY_ID")
-	os.Setenv("AWS_ACCESS_KEY_ID", a.AccessKeyID)
 	a.SecretAccessKey = getFlagValue(args, "AWS_SECRET_ACCESS_KEY")
-	os.Setenv("AWS_SECRET_ACCESS_KEY", a.SecretAccessKey)
 	a.Profile = getFlagValue(args, "aws-profile")
-	os.Setenv("AWS_PROFILE", a.Profile)
 	a.Region = getFlagValue(args, "aws-region")
-	setEnvIfNotSet("AWS_REGION", a.Region)
-
 	a.Bucket = getFlagValue(args, "aws-bucket")
 	a.Path = getFlagValue(args, "aws-path")
 	a.Endpoint = getFlagValue(args, "aws-endpoint")
-
 	return a
+}
+
+//SetAWSEnvironmentVariables ...
+func (a AwsSettings) SetAWSEnvironmentVariables() {
+	setEnvIfNotSet("AWS_ACCESS_KEY_ID", a.AccessKeyID)
+	setEnvIfNotSet("AWS_SECRET_ACCESS_KEY", a.SecretAccessKey)
+	setEnvIfNotSet("AWS_PROFILE", a.Profile)
+	setEnvIfNotSet("AWS_REGION", a.Region)
 }
 
 //HTTPSettings ...
